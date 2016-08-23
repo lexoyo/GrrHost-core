@@ -1,4 +1,46 @@
-<form action="/publish" method="post" enctype="multipart/form-data">
-  <input type="file" name="zip" accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream">
-  <button type="submit">Submit</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Grrhost files online now!!</title>
+  <link rel="stylesheet" href="pure-min.css">
+  <style type="text/css">
+    body {
+      margin: 100px;
+    }
+    .step {
+      font-size: 30px;
+    }
+  </style>
+</head>
+<body>
+<h2>Grrhost your files online now!!</h2>
+
+<h3>What is it?</h3>
+
+<p>Grrhost!! is a free hosting service based on git and github pages. It lets users host files on github pages without even having to login.</p>
+
+<h3>How does it work?</h3>
+
+<p>Install Grrhost!! on your server or use the <a href="https://grrhosting.herokuapp.com/">online demo here</a> (may be down sometimes).</p>
+
+<p>Select a <code>.zip</code> file and click "Grrhost!!!". Your files will be extracted and available online for you to share it to the world.</p>
+
+<p>You may want to have an <code>index.html</code> file at the root of your archive to serve a website, but it is not mandatory and Grrhost will host any file.</p>
+
+<p>The upload and grrhosting process will take around 20s.</p>
+
+<p>After a few seconds it will redirect you to an URL where your unzipped files are accessible online.</p>
+
+<p>If you do not have a ".zip" file, you can use this one: <a href="./sample.zip">sample.zip</a></p>
+
+  <h2>Try it now!!</h2>
+  <form action="/publish" method="post" enctype="multipart/form-data"  class="pure-form pure-form-stacked">
+    <label>
+      <p><span class="step">1 </span>Zip file to Grrhost!!!</p>
+      <input type="file" name="zip" accept="application/zip,application/x-zip,application/x-zip-compressed,application/octet-stream">
+    </label>
+    <p><span class="step">2 </span>When you are ready, click this button:</p>
+    <button type="submit" class="pure-button pure-button-primary">Grrhost!!!</button>
+  </form>
+</body>
+</html>

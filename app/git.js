@@ -74,7 +74,7 @@ exports.git = {
         }
         this.run(`cd ${local} && git add * && git commit -am "commit ${newFolder}" && git push origin ${branch}`)
         .then((stdout, stderr) => {
-          setTimeout(() => resolve(ghPageUrl + newFolder + '/'), 10000);
+          setTimeout(() => resolve(ghPageUrl + newFolder + '/'), 15000);
         })
         .catch(reject);
       });
