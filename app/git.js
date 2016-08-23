@@ -5,11 +5,10 @@ const exec = require('child_process').exec;
 const username = process.env.GRR_USER;
 const password = process.env.GRR_PASSWORD;
 const url = `https://${username}:${password}@github.com/${username}/GrrHost.git`;
-const ghPageUrl = `http://${username}.github.io/GrrHost.git`;
+const ghPageUrl = `http://${username}.github.io/GrrHost`;
 const local = path.resolve( __dirname, '../grrhost' );
 const branch = 'gh-pages';
 const cloneOpts = [];
-console.log('xxx')
 
 exports.git = {
   run: function run(command, cbk) {
@@ -48,16 +47,32 @@ exports.git = {
       }
     });
   },
-  publish: function publish() {
+  publish: function publish(zipedFile) {
     return new Promise((resolve, reject) => {
-      const newFolder = 'test' + Math.round(Math.random() * 100000);
-      fs.mkdirSync( path.resolve( local, newFolder ));
-      fs.writeFileSync( path.resolve( local, newFolder, '.keep' ), '');
-      this.run(`cd ${local} && git add * && git commit -am "commit ${newFolder}" && git push origin master`)
+      const newFolder = '/' + Math.round(Math.random() * 100000);
+      this.run(`unzip ${zipedFile} -d ${local + newFolder}`)
       .then((stdout, stderr) => {
-        resolve(ghPageUrl);
-      })
-      .catch(reject);
+        let numFiles = 0;
+        let lastFileName;
+        fs.readdirSync(local + newFolder).forEach(file => {
+          if( !file.startsWith('.') && !file.startsWith('__') ) {
+            numFiles++;
+            lastFileName = file;
+          }
+        });
+        if(numFiles === 1) {
+          const tmp = './tmp';
+          try { fs.mkdirSync(tmp); fs.mkdirSync(tmp + newFolder); } catch(e) { console.error('err:', e)};
+          fs.renameSync(local + newFolder, tmp + newFolder);
+          fs.renameSync(tmp + newFolder + '/' + lastFileName, local + newFolder);
+          try { fs.rmdirSync(tmp + newFolder); } catch(e) { console.error('err:', e)};
+        }
+        this.run(`cd ${local} && git add * && git commit -am "commit ${newFolder}" && git push origin ${branch}`)
+        .then((stdout, stderr) => {
+          setTimeout(() => resolve(ghPageUrl + newFolder + '/'), 10000);
+        })
+        .catch(reject);
+      });
     });
   }
 }
