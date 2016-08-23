@@ -32,7 +32,12 @@ exports.git = {
       if(err) {
         // clone repo
         console.log('cloning repo');
-        this.run(`git clone ${url} ${local} && cd ${local} && git checkout ${branch} && git pull --rebase origin ${branch}`)
+        this.run(`git clone ${url} ${local} \
+          && cd ${local} && git checkout ${branch} \
+          && git pull --rebase origin ${branch} \
+          && git config --global user.email "alexandre.hoyau+grrhosting-bot@gmail.com" \
+          && git config --global user.name "Grrhosting Bot" \
+          `)
         .then((stdout, stderr) => {
           if(cbk) cbk();
         });

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "6.3.1"
+  },
   "dependencies": {
     "express": "^4.14.0",
     "multer": "^1.2.0"
