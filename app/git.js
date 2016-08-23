@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
 
 const username = process.env.GRR_USER;
 const password = process.env.GRR_PASSWORD;
@@ -13,15 +13,24 @@ const cloneOpts = [];
 exports.git = {
   run: function run(command, cbk) {
     return new Promise((resolve, reject) => {
-      console.log('exec', command);
-      exec(command, (error, stdout, stderr) => {
-        if (error) {
-          console.error('exec', error);
-          reject(`exec error: ${error}`);
+      console.log('spawn', command);
+      const cmd = spawn(command);
+      cmd.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+      });
+
+      cmd.stderr.on('data', (data) => {
+        console.log(`stderr: ${data}`);
+      });
+
+      cmd.on('close', (code) => {
+        if (code !== 0) {
+          console.error('spawn', code);
+          reject(`spawn exited with code ${code}`);
         }
         else {
-          console.log('exec', stdout, stderr);
-          resolve(stdout, stderr);
+          console.log('spawn success');
+          resolve();
         }
       });
     });
@@ -38,7 +47,7 @@ exports.git = {
           && git config --global user.email "alexandre.hoyau+grrhosting-bot@gmail.com" \
           && git config --global user.name "Grrhosting Bot" \
           `)
-        .then((stdout, stderr) => {
+        .then(() => {
           if(cbk) cbk();
         });
       }
@@ -46,7 +55,7 @@ exports.git = {
         // existing repo
         console.log('opening repo');
         this.run(`cd ${local} && git checkout ${branch} && git pull --rebase origin ${branch}`)
-        .then((stdout, stderr) => {
+        .then(() => {
           if(cbk) cbk();
         });
       }
@@ -56,7 +65,7 @@ exports.git = {
     return new Promise((resolve, reject) => {
       const newFolder = '/' + Math.round(Math.random() * 100000);
       this.run(`unzip ${zipedFile} -d ${local + newFolder}`)
-      .then((stdout, stderr) => {
+      .then(() => {
         let numFiles = 0;
         let lastFileName;
         fs.readdirSync(local + newFolder).forEach(file => {
@@ -73,7 +82,7 @@ exports.git = {
           try { fs.rmdirSync(tmp + newFolder); } catch(e) { console.error('err:', e)};
         }
         this.run(`cd ${local} && git add * && git commit -am "commit ${newFolder}" && git push origin ${branch}`)
-        .then((stdout, stderr) => {
+        .then(() => {
           setTimeout(() => resolve(ghPageUrl + newFolder + '/'), 15000);
         })
         .catch(reject);
