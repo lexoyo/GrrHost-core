@@ -79,5 +79,18 @@ exports.git = {
         .catch(reject);
       });
     });
+  },
+  // rewite history to delete a file from all commits
+  // all publish operation will fail:
+  // `Updates were rejected because the tip of your current branch is behind`
+  forget(fileName) {
+    return new Promise((resolve, reject) => {
+      console.log('forget', fileName);
+      this.run(`cd ${local} && git pull --rebase origin ${branch} \
+        && git filter-branch -f --index-filter 'git rm -r --cached --ignore-unmatch ${fileName}' HEAD \
+        && git push -f origin ${branch}`)
+      .then(resolve)
+      .catch(reject);
+    });
   }
 }

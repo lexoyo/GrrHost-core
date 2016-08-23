@@ -16,6 +16,18 @@ app.post('/publish', upload.single('zip'), function (req, res) {
   });
 });
 
+app.get('/forget/:name', function (req, res) {
+  const name = req.params.name;
+  console.log('forget', name);
+  git.forget(name).then(url => {
+    console.log('forget done', name);
+    res.redirect('../');
+  }).catch(err => {
+    console.log('forget error', name, err);
+    res.redirect('../');
+  });
+});
+
 app.use(express.static('public'));
 
 app.listen(process.env.PORT || 3000, function () {
