@@ -1,3 +1,5 @@
+[![GrrHost demo instance 1](http://monitoshi.lexoyo.me/badge/1477989879902-2221)](https://grrhosting.herokuapp.com/)
+[![GrrHost demo instance 2](http://monitoshi.lexoyo.me/badge/1477989896833-64)](https://grrhosting2.herokuapp.com/)
 
 ## Grrhost your files online now!!
 
