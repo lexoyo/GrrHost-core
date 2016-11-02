@@ -6,7 +6,7 @@ const username = process.env.GRR_USER;
 const password = process.env.GRR_PASSWORD;
 const url = `https://${username}:${password}@github.com/${username}/GrrHost.git`;
 const ghPageUrl = `http://${username}.github.io/GrrHost`;
-const local = path.resolve( __dirname, '../grrhost' );
+const local = path.resolve( __dirname, '..', 'grrhost' );
 const branch = 'gh-pages';
 const cloneOpts = [];
 
@@ -35,8 +35,8 @@ exports.git = {
         this.run(`git clone ${url} ${local} \
           && cd ${local} && git checkout ${branch} \
           && git pull --rebase origin ${branch} \
-          && git config --global user.email "alexandre.hoyau+grrhosting-bot@gmail.com" \
-          && git config --global user.name "Grrhosting Bot" \
+          && git config user.email "alexandre.hoyau+grrhosting-bot@gmail.com" \
+          && git config user.name "Grrhosting Bot" \
           `)
         .then((stdout, stderr) => {
           if(cbk) cbk();
