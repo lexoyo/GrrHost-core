@@ -83,7 +83,7 @@ exports.git = {
           && git pull --rebase origin ${branch} \
           && git push origin ${branch}`)
         .then((stdout, stderr) => {
-          setTimeout(() => resolve(ghPageUrl + newFolder + '/'), 15000);
+          resolve(ghPageUrl + newFolder + '/');
         })
         .catch(reject);
       });

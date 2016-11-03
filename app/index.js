@@ -12,7 +12,10 @@ app.post('/publish', upload.single('zip'), function (req, res) {
   const zipedFile = req.file.path;
   git.publish(zipedFile).then(url => {
     // res.status(200).send(`<a href="${url}">Published Here!</a>`);
-    res.redirect(url);
+    // res.redirect(url);
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    const delay = 20;
+    res.status(200).send(`<meta http-equiv="refresh" content="${delay};url=${url}"><a href="${url}">You are about to be redirected, please wait or click here in ${delay}s</a>`);
   });
 });
 
