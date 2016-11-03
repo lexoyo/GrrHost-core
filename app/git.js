@@ -72,7 +72,10 @@ exports.git = {
           fs.renameSync(tmp + newFolder + '/' + lastFileName, local + newFolder);
           try { fs.rmdirSync(tmp + newFolder); } catch(e) { console.error('err:', e)};
         }
-        this.run(`cd ${local} && git add * && git commit -am "commit ${newFolder}" && git push origin ${branch}`)
+        this.run(`cd ${local} && git add * \
+          && git commit -am "commit ${newFolder}"  \
+          && git pull --rebase origin ${branch} \
+          && git push origin ${branch}`)
         .then((stdout, stderr) => {
           setTimeout(() => resolve(ghPageUrl + newFolder + '/'), 15000);
         })
