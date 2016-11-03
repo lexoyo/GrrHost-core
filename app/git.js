@@ -7,6 +7,8 @@ const password = process.env.GRR_PASSWORD;
 const url = `https://${username}:${password}@github.com/${username}/GrrHost.git`;
 const ghPageUrl = `http://${username}.github.io/GrrHost`;
 const local = path.resolve( __dirname, '..', 'grrhost' );
+const indexTemplatePath = path.resolve( __dirname, 'index.html.tpl' );
+const indexTemplateHtml = fs.readFileSync(indexTemplatePath).toString();
 const branch = 'gh-pages';
 const cloneOpts = [];
 
@@ -55,11 +57,12 @@ exports.git = {
   publish: function publish(zipedFile) {
     return new Promise((resolve, reject) => {
       const newFolder = '/' + Math.round(Math.random() * 100000);
-      this.run(`unzip ${zipedFile} -d ${local + newFolder}`)
+      const newFolderPathInLocalRepo = local + newFolder;
+      this.run(`unzip ${zipedFile} -d ${newFolderPathInLocalRepo}`)
       .then((stdout, stderr) => {
         let numFiles = 0;
         let lastFileName;
-        fs.readdirSync(local + newFolder).forEach(file => {
+        fs.readdirSync(newFolderPathInLocalRepo).forEach(file => {
           if( !file.startsWith('.') && !file.startsWith('__') ) {
             numFiles++;
             lastFileName = file;
@@ -67,11 +70,14 @@ exports.git = {
         });
         if(numFiles === 1) {
           const tmp = './tmp';
-          try { fs.mkdirSync(tmp); fs.mkdirSync(tmp + newFolder); } catch(e) { console.error('err:', e)};
-          fs.renameSync(local + newFolder, tmp + newFolder);
-          fs.renameSync(tmp + newFolder + '/' + lastFileName, local + newFolder);
-          try { fs.rmdirSync(tmp + newFolder); } catch(e) { console.error('err:', e)};
+          const tmpFolderPath = tmp + newFolder;
+          try { fs.mkdirSync(tmp); } catch(e) { console.warn('warn: could not create temp folder', tmp, e)};
+          try { fs.mkdirSync(tmpFolderPath); } catch(e) { console.error('err: could not create temp folder', tmpFolderPath, e)};
+          try { fs.renameSync(newFolderPathInLocalRepo, tmpFolderPath); } catch(e) { console.error('err: could not rename folder', newFolderPathInLocalRepo, 'to', tmpFolderPath, e)};
+          try { fs.renameSync(tmpFolderPath + '/' + lastFileName, newFolderPathInLocalRepo); } catch(e) { console.error('err: could not rename folder', tmpFolderPath + '/' + lastFileName, 'to', newFolderPathInLocalRepo, e)};
+          try { this.rmdirSyncRecurs(tmpFolderPath); } catch(e) { console.error('err:', e)};
         }
+        this.createIndexFiles(newFolderPathInLocalRepo);
         this.run(`cd ${local} && git add * \
           && git commit -am "commit ${newFolder}"  \
           && git pull --rebase origin ${branch} \
@@ -91,9 +97,44 @@ exports.git = {
       console.log('forget', fileName);
       this.run(`cd ${local} && git pull --rebase origin ${branch} \
         && git filter-branch -f --index-filter 'git rm -r --cached --ignore-unmatch ${fileName}' HEAD \
-        && git push -f origin ${branch}`)
+        && git push origin ${branch}`)
       .then(resolve)
       .catch(reject);
     });
+  },
+  rmdirSyncRecurs: function rmdirSyncRecurs(path) {
+    if( fs.existsSync(path) ) {
+      fs.readdirSync(path).forEach((file, index) => {
+        var curPath = path + "/" + file;
+        if(fs.lstatSync(curPath).isDirectory()) { // recurse
+          this.rmdirSyncRecurs(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(path);
+    }
+  },
+  createIndexFiles: function createIndexFiles(path) {
+    if( fs.existsSync(path) ) {
+      const files = fs.readdirSync(path);
+      files.forEach((file, index) => {
+        var curPath = path + "/" + file;
+        if(fs.lstatSync(curPath).isDirectory()) { // recurse
+          this.createIndexFiles(curPath);
+        } else {
+        }
+      });
+      // index file
+      if( !fs.existsSync(path + '/index.html') ) {
+        const filesList = '<ul>' + files.reduce((prev, current) => {
+          return prev + `<li><a href="./${current}">${current}</a></li>`;
+        }, '') + '</ul>';
+        const content = indexTemplateHtml
+          .replace('{{path}}', path.substr(local.length))
+          .replace('{{filesList}}', filesList);
+        fs.writeFileSync(path + '/index.html', content);
+      }
+    }
   }
 }
